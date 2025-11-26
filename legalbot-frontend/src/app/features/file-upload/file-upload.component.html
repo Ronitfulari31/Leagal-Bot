@@ -1,0 +1,73 @@
+<div class="file-upload-agreements-container">
+  <div class="upload-section owner-section">
+    <h3>Upload Owner Agreement</h3>
+    <div
+      class="drop-zone"
+      (drop)="onDropFile($event, 'owner')"
+      (dragover)="onDragOver($event)"
+    >
+      <input type="file" id="ownerFile" hidden (change)="onFileSelected($event, 'owner')" />
+      <label for="ownerFile" class="browse-label">
+        Drag document here<br/>or<br/>
+        <button type="button">Browse</button>
+      </label>
+      <div class="file-info" *ngIf="ownerFile">{{ ownerFile.name }}</div>
+    </div>
+  </div>
+  <div class="upload-section tenant-section">
+    <h3>Upload Tenant Agreement</h3>
+    <div
+      class="drop-zone"
+      (drop)="onDropFile($event, 'tenant')"
+      (dragover)="onDragOver($event)"
+    >
+      <input type="file" id="tenantFile" hidden (change)="onFileSelected($event, 'tenant')" />
+      <label for="tenantFile" class="browse-label">
+        Drag document here<br/>or<br/>
+        <button type="button">Browse</button>
+      </label>
+      <div class="file-info" *ngIf="tenantFile">{{ tenantFile.name }}</div>
+    </div>
+  </div>
+</div>
+<button class="submit-btn" (click)="onUpload()" [disabled]="!ownerFile || !tenantFile || loading || analysisStage !== 'upload'">
+  <span *ngIf="loading && analysisStage === 'upload'">Uploading...</span>
+  <span *ngIf="!loading || analysisStage !== 'upload'">Upload Both Agreements</span>
+</button>
+<button class="submit-btn" *ngIf="analysisStage === 'ready'" (click)="startAnalysis()" [disabled]="loading">
+  <span *ngIf="loading">Processing...</span>
+  <span *ngIf="!loading">Start Analysis</span>
+</button>
+<div class="progress-bar" *ngIf="analysisStage !== 'upload' && analysisStage !== 'ready'">
+  <div class="bar" [style.width.%]="getProgress()"></div>
+</div>
+<div *ngIf="analysisStage === 'processing'">
+  <p>Processing agreements...</p>
+</div>
+<div *ngIf="analysisStage === 'status'">
+  <p>Checking processing status...</p>
+</div>
+<div *ngIf="analysisStage === 'results'">
+  <h4>Analysis Results</h4>
+  <div>
+    <strong>Owner Agreement:</strong>
+    <pre>{{ ownerResult | json }}</pre>
+  </div>
+  <div>
+    <strong>Tenant Agreement:</strong>
+    <pre>{{ tenantResult | json }}</pre>
+  </div>
+</div>
+<div *ngIf="analysisStage === 'done'">
+  <h4>Comparison Result</h4>
+  <pre>{{ comparisonResult | json }}</pre>
+  <div class="deal-quality-bar">
+    <span>Deal Quality:</span>
+    <div class="quality-bar" [class.good]="comparisonResult?.can_do_agreement" [class.bad]="!comparisonResult?.can_do_agreement">
+      <div class="fill" [style.width.%]="comparisonResult?.overall_similarity * 100"></div>
+    </div>
+    <span>{{ comparisonResult?.can_do_agreement ? 'Good Deal' : 'Bad Deal' }}</span>
+  </div>
+</div>
+<div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+<div *ngIf="successMessage" class="success">{{ successMessage }}</div>

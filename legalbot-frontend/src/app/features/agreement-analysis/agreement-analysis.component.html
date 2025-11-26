@@ -1,0 +1,799 @@
+<div class="agreement-analysis-container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Agreement Analysis</h1>
+    <p class="subtitle">
+      Upload, analyze, and compare legal agreements with AI-powered insights
+    </p>
+  </div>
+
+  <!-- Progress Steps -->
+  <div class="progress-container">
+    <div class="progress-bar">
+      <div
+        class="progress-fill"
+        [style.width.%]="getProgressPercentage()"
+      ></div>
+    </div>
+
+    <div class="steps-container">
+      <div
+        *ngFor="let step of steps; let i = index"
+        [class]="getStepClass(step)"
+        [attr.data-step]="i + 1"
+      >
+        <div class="step-icon">
+          <span class="icon">{{ step.icon }}</span>
+          <div class="step-number">{{ i + 1 }}</div>
+        </div>
+        <div class="step-content">
+          <h3 class="step-title">{{ step.title }}</h3>
+          <p class="step-description">{{ step.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="content-area">
+    <!-- Step 1: Upload Agreements -->
+    <div *ngIf="steps[0].status === 'active'" class="step-content-section">
+      <div class="upload-section">
+        <h2>Upload Your Agreements</h2>
+        <p class="section-description">
+          Please upload both the owner and tenant agreement files for analysis.
+        </p>
+
+        <!-- Upload Loading State -->
+        <div
+          class="upload-loading"
+          *ngIf="isLoading && getStepStatus('upload') === 'loading'"
+        >
+          <div class="loading-content">
+            <div class="spinner-large"></div>
+            <h3>Uploading Files...</h3>
+            <p>Please wait while we upload and validate your agreement files</p>
+            <div class="upload-progress">
+              <div class="progress-bar">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="uploadProgress"
+                ></div>
+              </div>
+              <span class="progress-text">{{ uploadProgress }}% Complete</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="file-upload-grid">
+          <!-- Owner Agreement Upload -->
+          <div class="upload-card owner-card">
+            <div class="card-header">
+              <h3>Owner Agreement</h3>
+              <button
+                *ngIf="ownerFile"
+                class="clear-btn"
+                (click)="clearOwnerFile()"
+                title="Clear file"
+              >
+                ✕
+              </button>
+            </div>
+            <div
+              class="drop-zone"
+              (drop)="onDropFile($event, 'owner')"
+              (dragover)="onDragOver($event)"
+              [class.has-file]="ownerFile"
+            >
+              <input
+                type="file"
+                id="ownerFile"
+                hidden
+                accept=".pdf,.docx"
+                (change)="onOwnerFileSelected($event)"
+              />
+              <label for="ownerFile" class="upload-label">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">
+                  <span *ngIf="!ownerFile"
+                    >Drop file here or click to browse</span
+                  >
+                  <span *ngIf="ownerFile" class="file-name">{{
+                    ownerFile.name
+                  }}</span>
+                </div>
+                <div class="upload-hint">PDF or DOCX files only</div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Tenant Agreement Upload -->
+          <div class="upload-card tenant-card">
+            <div class="card-header">
+              <h3>Tenant Agreement</h3>
+              <button
+                *ngIf="tenantFile"
+                class="clear-btn"
+                (click)="clearTenantFile()"
+                title="Clear file"
+              >
+                ✕
+              </button>
+            </div>
+            <div
+              class="drop-zone"
+              (drop)="onDropFile($event, 'tenant')"
+              (dragover)="onDragOver($event)"
+              [class.has-file]="tenantFile"
+            >
+              <input
+                type="file"
+                id="tenantFile"
+                hidden
+                accept=".pdf,.docx"
+                (change)="onTenantFileSelected($event)"
+              />
+              <label for="tenantFile" class="upload-label">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">
+                  <span *ngIf="!tenantFile"
+                    >Drop file here or click to browse</span
+                  >
+                  <span *ngIf="tenantFile" class="file-name">{{
+                    tenantFile.name
+                  }}</span>
+                </div>
+                <div class="upload-hint">PDF or DOCX files only</div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button
+            *ngIf="ownerFile || tenantFile"
+            class="btn btn-secondary"
+            (click)="clearAllFiles()"
+          >
+            Clear All Files
+          </button>
+          <button
+            class="btn btn-primary btn-large"
+            (click)="uploadAgreements()"
+            [disabled]="!ownerFile || !tenantFile || isLoading"
+          >
+            <span *ngIf="isLoading" class="btn-spinner"></span>
+            <span *ngIf="!isLoading">Upload Agreements</span>
+            <span *ngIf="isLoading">Uploading...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Start Analysis -->
+    <div *ngIf="steps[1].status === 'active'" class="step-content-section">
+      <div class="analysis-section">
+        <h2>Ready to Analyze</h2>
+        <p class="section-description">
+          Your agreements have been uploaded successfully. Click below to start
+          the analysis process.
+        </p>
+
+        <!-- Analysis Loading State -->
+        <div
+          class="analysis-loading"
+          *ngIf="isLoading && getStepStatus('analysis') === 'loading'"
+        >
+          <div class="loading-content">
+            <div class="spinner-large"></div>
+            <h3>Preparing Analysis...</h3>
+            <p>
+              Setting up the analysis environment and preparing your documents
+            </p>
+            <div class="analysis-progress">
+              <div class="progress-steps">
+                <div class="progress-step active">
+                  <div class="step-icon">🔧</div>
+                  <span>Initializing</span>
+                </div>
+                <div class="progress-step">
+                  <div class="step-icon">📄</div>
+                  <span>Processing</span>
+                </div>
+                <div class="progress-step">
+                  <div class="step-icon">🚀</div>
+                  <span>Starting</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="upload-summary">
+          <div class="summary-card">
+            <h4>Uploaded Files</h4>
+            <div class="file-summary">
+              <div class="file-item">
+                <span class="file-icon">📄</span>
+                <span class="file-name">{{ ownerFile?.name }}</span>
+                <span class="file-type">Owner Agreement</span>
+              </div>
+              <div class="file-item">
+                <span class="file-icon">📄</span>
+                <span class="file-name">{{ tenantFile?.name }}</span>
+                <span class="file-type">Tenant Agreement</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button
+            class="btn btn-primary btn-large"
+            (click)="startAnalysis()"
+            [disabled]="isLoading"
+          >
+            <span *ngIf="isLoading" class="btn-spinner"></span>
+            <span *ngIf="!isLoading">Start Analysis</span>
+            <span *ngIf="isLoading">Starting...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Processing Status -->
+    <div *ngIf="steps[2].status === 'active'" class="step-content-section">
+      <div class="processing-section">
+        <h2>Processing Documents</h2>
+        <p class="section-description">
+          Your agreements are being analyzed. This may take a few minutes.
+        </p>
+
+        <div class="processing-indicator">
+          <div class="spinner-large"></div>
+          <div class="processing-text">
+            <h3>Analyzing Documents...</h3>
+            <p>Extracting text, identifying clauses, and assessing risks</p>
+
+            <!-- Enhanced Processing Steps -->
+            <div class="processing-steps">
+              <div class="processing-step" [class.active]="processingStep >= 1">
+                <div class="step-icon">📖</div>
+                <span>Reading Documents</span>
+              </div>
+              <div class="processing-step" [class.active]="processingStep >= 2">
+                <div class="step-icon">🔍</div>
+                <span>Extracting Clauses</span>
+              </div>
+              <div class="processing-step" [class.active]="processingStep >= 3">
+                <div class="step-icon">⚠️</div>
+                <span>Risk Assessment</span>
+              </div>
+              <div class="processing-step" [class.active]="processingStep >= 4">
+                <div class="step-icon">📊</div>
+                <span>Generating Summary</span>
+              </div>
+            </div>
+
+            <!-- Processing Progress Bar -->
+            <div class="processing-progress">
+              <div class="progress-bar">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="processingProgress"
+                ></div>
+              </div>
+              <span class="progress-text"
+                >{{ processingProgress }}% Complete</span
+              >
+            </div>
+
+            <div class="status-badge">
+              <span class="status-dot processing"></span>
+              {{ analysisData.status || "Processing..." }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Analysis Results -->
+    <div *ngIf="steps[3].status === 'active'" class="step-content-section">
+      <div class="results-section">
+        <h2>Analysis Results</h2>
+        <p class="section-description">
+          Review the detailed analysis of your agreements. Comparison will start
+          automatically.
+        </p>
+
+        <div
+          class="results-table-container"
+          *ngIf="analysisData.ownerResults && analysisData.tenantResults"
+        >
+          <div class="table-wrapper">
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th class="metric-column">Analysis Metric</th>
+                  <th class="agreement-column">Agreement A (Owner)</th>
+                  <th class="agreement-column">Agreement B (Tenant)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="metric-row">
+                  <td class="metric-label">
+                    <div class="metric-icon">⚠️</div>
+                    <span>Risk Level</span>
+                  </td>
+                  <td class="agreement-data">
+                    <span
+                      class="risk-badge"
+                      [class]="
+                        'risk-' +
+                        analysisData.ownerResults.risk_level?.toLowerCase()
+                      "
+                    >
+                      {{ analysisData.ownerResults.risk_level }}
+                    </span>
+                  </td>
+                  <td class="agreement-data">
+                    <span
+                      class="risk-badge"
+                      [class]="
+                        'risk-' +
+                        analysisData.tenantResults.risk_level?.toLowerCase()
+                      "
+                    >
+                      {{ analysisData.tenantResults.risk_level }}
+                    </span>
+                  </td>
+                </tr>
+
+                <tr class="metric-row">
+                  <td class="metric-label">
+                    <div class="metric-icon">📝</div>
+                    <span>Summary</span>
+                  </td>
+                  <td class="agreement-data">
+                    <div class="summary-cell">
+                      {{ analysisData.ownerResults.summary }}
+                    </div>
+                  </td>
+                  <td class="agreement-data">
+                    <div class="summary-cell">
+                      {{ analysisData.tenantResults.summary }}
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="metric-row">
+                  <td class="metric-label">
+                    <div class="metric-icon">📋</div>
+                    <span>Key Clauses</span>
+                  </td>
+                  <td class="agreement-data">
+                    <div class="clauses-cell">
+                      {{ analysisData.ownerResults.clauses }}
+                    </div>
+                  </td>
+                  <td class="agreement-data">
+                    <div class="clauses-cell">
+                      {{ analysisData.tenantResults.clauses }}
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="metric-row">
+                  <td class="metric-label">
+                    <div class="metric-icon">🏷️</div>
+                    <span>Keywords</span>
+                  </td>
+                  <td class="agreement-data">
+                    <div class="keywords-cell">
+                      {{ analysisData.ownerResults.keywords }}
+                    </div>
+                  </td>
+                  <td class="agreement-data">
+                    <div class="keywords-cell">
+                      {{ analysisData.tenantResults.keywords }}
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div
+          class="action-buttons"
+          *ngIf="steps[3].status === 'active' && !isLoading"
+        >
+          <div class="auto-progress">
+            <div class="spinner-small"></div>
+            <span>Automatically starting comparison...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5: Auto Comparison -->
+    <div *ngIf="steps[4].status === 'active'" class="step-content-section">
+      <div class="comparison-section">
+        <h2>Automatically Running Comparison</h2>
+        <p class="section-description">
+          Comparing the two agreements to identify differences and similarities.
+        </p>
+
+        <div class="comparison-indicator">
+          <div class="spinner-large"></div>
+          <div class="processing-text">
+            <h3>Comparing Agreements...</h3>
+            <p>Analyzing clauses, entities, and identifying key differences</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 6: Comparison Report (show only after report step is completed) -->
+    <div
+      *ngIf="getStepStatus('report') === 'completed'"
+      class="step-content-section"
+    >
+      <div class="report-section">
+        <h2>Comparison Report</h2>
+        <p class="section-description">
+          Detailed comparison analysis with recommendations.
+        </p>
+
+        <div *ngIf="analysisData.comparisonResults" class="comparison-report">
+          <!-- Deal Quality Assessment - Prominent Display -->
+          <div class="quality-assessment-prominent">
+            <div class="quality-header">
+              <h2>🎯 Deal Quality Assessment</h2>
+              <p class="assessment-subtitle">
+                Final recommendation based on agreement analysis
+              </p>
+            </div>
+
+            <div class="quality-metrics-grid">
+              <div class="metric-card similarity-card">
+                <div class="metric-icon">📊</div>
+                <div class="metric-content">
+                  <h4>Overall Similarity</h4>
+                  <div class="similarity-value">
+                    {{
+                      (
+                        analysisData.comparisonResults.overall_similarity * 100
+                      ).toFixed(1)
+                    }}%
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="metric-card verdict-card"
+                [class.good-deal]="getRecommendation().includes('PROCEED')"
+                [class.needs-review]="!getRecommendation().includes('PROCEED')"
+              >
+                <div class="metric-icon">
+                  {{ getRecommendation().includes("PROCEED") ? "✅" : "⚠️" }}
+                </div>
+                <div class="metric-content">
+                  <h4>Deal Recommendation</h4>
+                  <div class="verdict-text">
+                    {{ getRecommendation() }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="quality-visualization">
+              <div class="similarity-bar-container">
+                <div class="bar-label">Agreement Compatibility</div>
+                <div class="similarity-bar">
+                  <div
+                    class="similarity-fill"
+                    [class.good]="
+                      analysisData.comparisonResults.can_do_agreement
+                    "
+                    [class.bad]="
+                      !analysisData.comparisonResults.can_do_agreement
+                    "
+                    [style.width.%]="
+                      analysisData.comparisonResults.overall_similarity * 100
+                    "
+                  ></div>
+                  <div class="similarity-percentage">
+                    {{
+                      (
+                        analysisData.comparisonResults.overall_similarity * 100
+                      ).toFixed(0)
+                    }}%
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Missing Clauses -->
+          <div class="comparison-details">
+            <div
+              class="detail-section"
+              *ngIf="
+                analysisData.comparisonResults.missing_clauses_in_b?.length
+              "
+            >
+              <h4>Clauses Missing in Tenant Agreement</h4>
+              <ul class="clause-list">
+                <li
+                  *ngFor="
+                    let clause of analysisData.comparisonResults
+                      .missing_clauses_in_b
+                  "
+                >
+                  {{ clause }}
+                </li>
+              </ul>
+            </div>
+
+            <div
+              class="detail-section"
+              *ngIf="
+                analysisData.comparisonResults.missing_clauses_in_a?.length
+              "
+            >
+              <h4>Clauses Missing in Owner Agreement</h4>
+              <ul class="clause-list">
+                <li
+                  *ngFor="
+                    let clause of analysisData.comparisonResults
+                      .missing_clauses_in_a
+                  "
+                >
+                  {{ clause }}
+                </li>
+              </ul>
+            </div>
+
+            <div
+              class="detail-section"
+              *ngIf="analysisData.comparisonResults.entities_only_in_a?.length"
+            >
+              <h4>Entities Only in Owner Agreement</h4>
+              <ul class="entity-list">
+                <li
+                  *ngFor="
+                    let entity of analysisData.comparisonResults
+                      .entities_only_in_a
+                  "
+                >
+                  {{ entity }}
+                </li>
+              </ul>
+            </div>
+
+            <div
+              class="detail-section"
+              *ngIf="analysisData.comparisonResults.entities_only_in_b?.length"
+            >
+              <h4>Entities Only in Tenant Agreement</h4>
+              <ul class="entity-list">
+                <li
+                  *ngFor="
+                    let entity of analysisData.comparisonResults
+                      .entities_only_in_b
+                  "
+                >
+                  {{ entity }}
+                </li>
+              </ul>
+            </div>
+
+            <!-- Risk Assessment Section -->
+            <div
+              class="detail-section risk-assessment-section"
+              *ngIf="
+                analysisData.comparisonResults.risk_a ||
+                analysisData.comparisonResults.risk_b
+              "
+            >
+              <h4>⚠️ Risk Assessment</h4>
+              <div class="risk-container">
+                <div
+                  class="risk-item"
+                  *ngIf="analysisData.comparisonResults.risk_a"
+                >
+                  <div class="risk-header">
+                    <span class="risk-icon">👤</span>
+                    <span class="risk-label">Owner Agreement Risk</span>
+                    <span
+                      class="risk-level"
+                      [class]="
+                        'risk-' +
+                        analysisData.comparisonResults.risk_a.level?.toLowerCase()
+                      "
+                    >
+                      {{ analysisData.comparisonResults.risk_a.level }} ({{
+                        analysisData.comparisonResults.risk_a.score
+                      }})
+                    </span>
+                  </div>
+                  <div
+                    class="risk-details"
+                    *ngIf="analysisData.comparisonResults.risk_a.found?.length"
+                  >
+                    <div class="risk-factors">
+                      <span class="risk-factors-label">Risk Factors:</span>
+                      <ul class="risk-list">
+                        <li
+                          *ngFor="
+                            let factor of analysisData.comparisonResults.risk_a
+                              .found
+                          "
+                        >
+                          {{ factor }}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  class="risk-item"
+                  *ngIf="analysisData.comparisonResults.risk_b"
+                >
+                  <div class="risk-header">
+                    <span class="risk-icon">🏠</span>
+                    <span class="risk-label">Tenant Agreement Risk</span>
+                    <span
+                      class="risk-level"
+                      [class]="
+                        'risk-' +
+                        analysisData.comparisonResults.risk_b.level?.toLowerCase()
+                      "
+                    >
+                      {{ analysisData.comparisonResults.risk_b.level }} ({{
+                        analysisData.comparisonResults.risk_b.score
+                      }})
+                    </span>
+                  </div>
+                  <div
+                    class="risk-details"
+                    *ngIf="analysisData.comparisonResults.risk_b.found?.length"
+                  >
+                    <div class="risk-factors">
+                      <span class="risk-factors-label">Risk Factors:</span>
+                      <ul class="risk-list">
+                        <li
+                          *ngFor="
+                            let factor of analysisData.comparisonResults.risk_b
+                              .found
+                          "
+                        >
+                          {{ factor }}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dates Section -->
+            <div
+              class="detail-section dates-section"
+              *ngIf="
+                analysisData.comparisonResults.dates_only_in_a?.length ||
+                analysisData.comparisonResults.dates_only_in_b?.length
+              "
+            >
+              <h4>📅 Date Differences</h4>
+              <div class="dates-container">
+                <div
+                  class="dates-item"
+                  *ngIf="analysisData.comparisonResults.dates_only_in_a?.length"
+                >
+                  <div class="dates-label">
+                    <span class="dates-icon">👤</span>
+                    <span>Dates Only in Owner Agreement:</span>
+                  </div>
+                  <div class="dates-list">
+                    <span
+                      class="date-badge"
+                      *ngFor="
+                        let date of analysisData.comparisonResults
+                          .dates_only_in_a
+                      "
+                      >{{ date }}</span
+                    >
+                  </div>
+                </div>
+
+                <div
+                  class="dates-item"
+                  *ngIf="analysisData.comparisonResults.dates_only_in_b?.length"
+                >
+                  <div class="dates-label">
+                    <span class="dates-icon">🏠</span>
+                    <span>Dates Only in Tenant Agreement:</span>
+                  </div>
+                  <div class="dates-list">
+                    <span
+                      class="date-badge"
+                      *ngFor="
+                        let date of analysisData.comparisonResults
+                          .dates_only_in_b
+                      "
+                      >{{ date }}</span
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Summary Section -->
+            <div
+              class="detail-section summary-section"
+              *ngIf="analysisData.comparisonResults?.summary"
+            >
+              <h4>📋 Agreement Summary</h4>
+              <div class="summary-container">
+                <div
+                  class="summary-item"
+                  *ngIf="analysisData.comparisonResults.summary.doc_a"
+                >
+                  <div class="summary-label">
+                    <span class="summary-icon">👤</span>
+                    <span>Owner Agreement:</span>
+                  </div>
+                  <div class="summary-text">
+                    {{ analysisData.comparisonResults.summary.doc_a }}
+                  </div>
+                </div>
+                <div
+                  class="summary-item"
+                  *ngIf="analysisData.comparisonResults.summary.doc_b"
+                >
+                  <div class="summary-label">
+                    <span class="summary-icon">🏠</span>
+                    <span>Tenant Agreement:</span>
+                  </div>
+                  <div class="summary-text">
+                    {{ analysisData.comparisonResults.summary.doc_b }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn btn-secondary" (click)="resetFlow()">
+            Start New Analysis
+          </button>
+          <button
+            class="btn btn-primary"
+            (click)="exportReport()"
+            [disabled]="!analysisData.comparisonResults"
+          >
+            <span class="btn-icon">📄</span>
+            Export Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="messages-container">
+    <div *ngIf="errorMessage" class="message message-error">
+      <span class="message-icon">⚠️</span>
+      <span class="message-text">{{ errorMessage }}</span>
+    </div>
+
+    <div *ngIf="successMessage" class="message message-success">
+      <span class="message-icon">✅</span>
+      <span class="message-text">{{ successMessage }}</span>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,70 @@
+<div class="comparison-container">
+  <div class="uploader">
+    <label>
+      Owner file
+      <input type="file" (change)="onFileASelected($event)" />
+    </label>
+    <label>
+      Tenant file
+      <input type="file" (change)="onFileBSelected($event)" />
+    </label>
+    <button (click)="compareFiles()" [disabled]="loading">Compare</button>
+    <button (click)="downloadPdf()" [disabled]="!comparisonReport">Download PDF</button>
+    <button class="accept" (click)="acceptAgreement()" [disabled]="!comparisonReport">Accept</button>
+    <button class="flag" (click)="flagAgreement()" [disabled]="!comparisonReport">Flag</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Comparing…</div>
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <div *ngIf="comparisonReport" id="comparison-root" class="report-root">
+    <div class="toolbar">
+      <div class="gauge">
+        <div class="gauge-fill" [style.width.%]="dealScore">{{ dealScore }}%</div>
+      </div>
+      <div class="score-label">Deal Score</div>
+
+      <div class="risk-summary">
+        <ng-container *ngIf="comparisonReport.risk_a || comparisonReport.risk_b">
+          <div class="risk-badge" [ngClass]="comparisonReport.risk_a?.level?.toLowerCase()">
+            Owner Risk: {{ comparisonReport.risk_a?.level }} ({{ comparisonReport.risk_a?.score }})
+          </div>
+          <div class="risk-badge" [ngClass]="comparisonReport.risk_b?.level?.toLowerCase()">
+            Tenant Risk: {{ comparisonReport.risk_b?.level }} ({{ comparisonReport.risk_b?.score }})
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="panes">
+      <div #leftPane class="pane left-pane" aria-label="Owner agreement">
+        <h4>Owner</h4>
+        <pre class="doc-text">{{ comparisonReport?.doc_a?.text || comparisonReport?.text_a || '' }}</pre>
+        <div class="clauses">
+          <h5>Missing in Tenant</h5>
+          <div *ngFor="let c of comparisonReport.missing_clauses_in_b">{{ c }}</div>
+        </div>
+      </div>
+
+      <div #rightPane class="pane right-pane" aria-label="Tenant agreement">
+        <h4>Tenant</h4>
+        <pre class="doc-text">{{ comparisonReport?.doc_b?.text || comparisonReport?.text_b || '' }}</pre>
+        <div class="clauses">
+          <h5>Missing in Owner</h5>
+          <div *ngFor="let c of comparisonReport.missing_clauses_in_a">{{ c }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="details">
+      <h4>Diagnostics</h4>
+      <pre>{{ comparisonReport?.diagnostics | json }}</pre>
+
+      <h4>Entities only in Owner</h4>
+      <pre>{{ comparisonReport?.entities_only_in_a | json }}</pre>
+
+      <h4>Entities only in Tenant</h4>
+      <pre>{{ comparisonReport?.entities_only_in_b | json }}</pre>
+    </div>
+  </div>
+</div>

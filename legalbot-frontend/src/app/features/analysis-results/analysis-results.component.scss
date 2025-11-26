@@ -1,0 +1,71 @@
+.analysis-results-container {
+  max-width: 650px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #fbfbfb;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+  h2 {
+    color: #333;
+    margin-bottom: 1.2rem;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 0.5rem 0.8rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin-bottom: 1rem;
+  }
+
+  button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.6rem 1.3rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    &:disabled {
+      background-color: #a8c5f8;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: #0056b3;
+    }
+  }
+
+  .results {
+    margin-top: 1.5rem;
+    color: #222;
+    
+    h3 {
+      margin-top: 1rem;
+      margin-bottom: 0.3rem;
+      color: #444;
+    }
+
+    p {
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      padding: 0.6rem 1rem;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+  }
+
+  .error {
+    margin-top: 1rem;
+    padding: 0.7rem 1rem;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #842029;
+    border-radius: 4px;
+  }
+}

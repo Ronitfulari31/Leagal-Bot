@@ -1,0 +1,34 @@
+<div class="analysis-results-container">
+  <h2>View Analysis Results</h2>
+
+  <input
+    type="text"
+    placeholder="Enter Process ID"
+    [(ngModel)]="processId"
+  />
+
+  <button (click)="fetchResults()" [disabled]="loading">
+    {{ loading ? 'Loading...' : 'Fetch Results' }}
+  </button>
+
+  <div *ngIf="results" class="results">
+    <h3>Summary:</h3>
+    <p>{{ results.summary }}</p>
+
+    <h3>Extracted Text Preview:</h3>
+    <p>{{ results.extracted_text }}</p>
+
+    <h3>Clauses:</h3>
+    <p>{{ results.clauses }}</p>
+
+    <h3>Risk Level:</h3>
+    <p>{{ results.risk_level }}</p>
+
+    <h3>Keywords:</h3>
+    <p>{{ results.keywords }}</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error">
+    <p>{{ errorMessage }}</p>
+  </div>
+</div>

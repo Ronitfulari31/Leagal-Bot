@@ -1,0 +1,21 @@
+<div class="processing-status-container">
+  <h2>Check Processing Status</h2>
+
+  <input
+    type="text"
+    placeholder="Enter Process ID"
+    [(ngModel)]="processId"
+  />
+
+  <button (click)="checkStatus()" [disabled]="loading">
+    {{ loading ? 'Checking...' : 'Check Status' }}
+  </button>
+
+  <div *ngIf="status" class="status">
+    <p>Current Status: {{ status }}</p>
+  </div>
+
+  <div *ngIf="errorMessage" class="error">
+    <p>{{ errorMessage }}</p>
+  </div>
+</div>

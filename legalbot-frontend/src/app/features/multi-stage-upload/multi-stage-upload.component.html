@@ -1,0 +1,73 @@
+<div class="multi-stage-upload-container">
+  <h2>Compare Two Agreements</h2>
+
+  <div *ngIf="stage === 'upload'">
+    <div class="file-upload-section">
+      <label>Select Agreement A:</label>
+      <input type="file" (change)="onFileSelected($event, 'A')" />
+      <span *ngIf="fileAName">{{ fileAName }}</span>
+    </div>
+    <div class="file-upload-section">
+      <label>Select Agreement B:</label>
+      <input type="file" (change)="onFileSelected($event, 'B')" />
+      <span *ngIf="fileBName">{{ fileBName }}</span>
+    </div>
+    <button (click)="uploadFiles()" [disabled]="!fileA || !fileB || loading">
+      <span *ngIf="loading">Uploading...</span>
+      <span *ngIf="!loading">Upload Agreements</span>
+    </button>
+    <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+  </div>
+
+  <div *ngIf="stage === 'processing'">
+    <h3>Processing Agreements...</h3>
+    <div class="progress-bar"><div class="bar" [style.width.%]="progress"></div></div>
+  </div>
+
+  <div *ngIf="stage === 'status'">
+    <h3>Checking Processing Status...</h3>
+    <div class="progress-bar"><div class="bar" [style.width.%]="progress"></div></div>
+  </div>
+
+  <div *ngIf="stage === 'results'">
+    <h3>Analysis Results</h3>
+    <div class="results-section">
+      <div>
+        <h4>Agreement A</h4>
+        <p><strong>Summary:</strong> {{ resultA?.summary }}</p>
+        <p><strong>Risk Level:</strong> {{ resultA?.risk_level }}</p>
+        <p><strong>Keywords:</strong> {{ resultA?.keywords }}</p>
+      </div>
+      <div>
+        <h4>Agreement B</h4>
+        <p><strong>Summary:</strong> {{ resultB?.summary }}</p>
+        <p><strong>Risk Level:</strong> {{ resultB?.risk_level }}</p>
+        <p><strong>Keywords:</strong> {{ resultB?.keywords }}</p>
+      </div>
+    </div>
+    <button (click)="compareAgreements()" [disabled]="loading">
+      <span *ngIf="loading">Comparing...</span>
+      <span *ngIf="!loading">Start Comparison</span>
+    </button>
+    <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+  </div>
+
+  <div *ngIf="stage === 'comparison'">
+    <h3>Comparing Agreements...</h3>
+    <div class="progress-bar"><div class="bar" [style.width.%]="progress"></div></div>
+  </div>
+
+  <div *ngIf="stage === 'done'">
+    <h3>Comparison Result</h3>
+    <div class="comparison-result-section">
+      <pre>{{ comparisonResult | json }}</pre>
+      <div class="deal-quality-bar">
+        <span>Deal Quality:</span>
+        <div class="quality-bar" [class.good]="comparisonResult?.can_do_agreement" [class.bad]="!comparisonResult?.can_do_agreement">
+          <div class="fill" [style.width.%]="comparisonResult?.overall_similarity * 100"></div>
+        </div>
+        <span>{{ comparisonResult?.can_do_agreement ? 'Good Deal' : 'Bad Deal' }}</span>
+      </div>
+    </div>
+  </div>
+</div>
